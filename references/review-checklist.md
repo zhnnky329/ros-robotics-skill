@@ -2,8 +2,8 @@
 
 ## 构建与工作区
 
-- 是否先识别 ROS 1 / ROS 2 / mixed workspace
-- 是否沿用现有构建系统，而不是盲目切换 `catkin_make` / `catkin build` / `colcon`
+- 是否确认当前环境为 Ubuntu 22.04 与 ROS 2 Humble
+- 是否识别 `ament_cmake` / `ament_python` 包并沿用 `colcon` 工作流
 - `package.xml` 与 `CMakeLists.txt` / `setup.py` 是否一致
 
 ## 接口与消息

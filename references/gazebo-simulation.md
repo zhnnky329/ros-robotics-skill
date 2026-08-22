@@ -11,10 +11,9 @@ Gazebo 问题通常出在：模型描述(SDF/URDF)、传感器插件配置、物
 | ROS 2 发行版 | 推荐版本 | 包名前缀 |
 |---|---|---|
 | Humble | Classic 11 / Gz Fortress | `gazebo_ros` / `ros_gz` |
-| Jazzy | Gz Harmonic | `ros_gz` |
 
 ```bash
-sudo apt install ros-jazzy-ros-gz          # Gz Harmonic
+sudo apt install ros-humble-ros-gz
 sudo apt install ros-humble-gazebo-ros-pkgs # Classic
 ```
 

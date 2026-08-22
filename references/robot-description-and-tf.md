@@ -38,7 +38,7 @@
 
 ## 官方参考
 
-- `robot_state_publisher`：<https://docs.ros.org/en/noetic/api/robot_state_publisher/html/>
-- ROS 2 URDF 教程：<https://docs.ros.org/en/jazzy/Tutorials/Intermediate/URDF/Using-URDF-with-Robot-State-Publisher-cpp.html>
-- `xacro`：<https://docs.ros.org/en/ros2_packages/jazzy/api/xacro/>
-- `tf2` 教程：<https://docs.ros.org/en/galactic/Tutorials/Intermediate/Tf2/Tf2-Main.html>
+- `robot_state_publisher`：<https://docs.ros.org/en/humble/p/robot_state_publisher/>
+- ROS 2 URDF 教程：<https://docs.ros.org/en/humble/Tutorials/Intermediate/URDF/Using-URDF-with-Robot-State-Publisher-py.html>
+- `xacro`：<https://docs.ros.org/en/ros2_packages/humble/api/xacro/>
+- `tf2` 教程：<https://docs.ros.org/en/humble/Tutorials/Intermediate/Tf2/Tf2-Main.html>

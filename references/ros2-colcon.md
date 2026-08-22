@@ -9,7 +9,7 @@
 ## 安全默认流程
 
 ```bash
-source /opt/ros/$ROS_DISTRO/setup.bash
+source /opt/ros/humble/setup.bash
 rosdep install --from-paths src --ignore-src -r -y
 colcon build
 source install/setup.bash
@@ -37,6 +37,6 @@ ros2 doctor
 
 ## 官方参考
 
-- ROS 2 `colcon`：<https://docs.ros.org/en/kilted/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html>
-- `rosdep`：<https://docs.ros.org/en/kilted/Tutorials/Intermediate/Rosdep.html>
+- ROS 2 `colcon`：<https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html>
+- `rosdep`：<https://docs.ros.org/en/humble/Tutorials/Intermediate/Rosdep.html>
 - REP-149：<https://www.ros.org/reps/rep-0149.html>

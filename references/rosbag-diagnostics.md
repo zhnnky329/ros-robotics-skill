@@ -145,8 +145,8 @@ ros2 bag play my_bag/ --qos-profile-overrides-path qos.yaml
 
 ## 官方与高星参考
 
-- ros2 bag CLI: <https://docs.ros.org/en/jazzy/Tutorials/Beginner-CLI-Tools/Recording-And-Playing-Back-Data.html>
+- ros2 bag CLI: <https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools/Recording-And-Playing-Back-Data.html>
 - rosbag2 GitHub: <https://github.com/ros2/rosbag2>
 - mcap 文档: <https://mcap.dev/>
 - Foxglove Studio: <https://foxglove.dev/>
-- ros2 doctor: <https://docs.ros.org/en/jazzy/Tutorials/Beginner-CLI-Tools/Getting-Started-With-Ros2doctor.html>
+- ros2 doctor: <https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools/Getting-Started-With-Ros2doctor.html>

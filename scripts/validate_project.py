@@ -8,11 +8,12 @@ from pathlib import Path
 REQUIRED = [
     'SKILL.md',
     'README.md',
-    'README.en.md',
     'LICENSE',
-    'VERSION',
+    'agents/openai.yaml',
     'scripts/install.py',
-    'integrations/gemini/commands/ros-robotics.md',
+    'scripts/detect_ros_workspace.py',
+    'scripts/check_ros_workspace_consistency.py',
+    'scripts/check_tf_tree.py',
 ]
 
 

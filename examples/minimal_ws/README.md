@@ -15,7 +15,7 @@
 
 ## 先决条件
 
-- **ROS 2 Humble** 或 **ROS 2 Jazzy**（推荐）
+- **ROS 2 Humble**
 - `colcon` 构建工具
 - `rosdep` 依赖管理工具
 
@@ -23,8 +23,6 @@
 
 ```bash
 source /opt/ros/humble/setup.bash
-# 或
-source /opt/ros/jazzy/setup.bash
 ```
 
 ## 构建步骤

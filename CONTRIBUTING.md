@@ -9,15 +9,15 @@
 - 新的 ROS 专题参考文档
 - 更准确的工作区检测 / 一致性检查逻辑
 - 新的真实案例
-- 对 Codex / Claude Code / Gemini CLI 的更好安装体验
+- 对 Codex / Claude Code 的更好安装体验
 - 文档修正、兼容矩阵补充、CI 改进
 
 ## 提交前请先做这些事
 
 ```bash
-python -m unittest discover -s tests -p "test_*.py"
-python scripts/detect_ros_workspace.py .
-python scripts/check_ros_workspace_consistency.py .
+python3 -m unittest discover -s tests -p "test_*.py"
+python3 scripts/detect_ros_workspace.py .
+python3 scripts/check_ros_workspace_consistency.py .
 ```
 
 ## 文档约定

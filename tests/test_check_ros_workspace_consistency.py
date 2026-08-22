@@ -30,11 +30,11 @@ class ConsistencyTests(unittest.TestCase):
         package_dir = self.root / 'src' / 'demo_pkg'
         package_dir.mkdir(parents=True, exist_ok=True)
         (package_dir / 'package.xml').write_text(
-            '<package><name>demo_pkg</name><buildtool_depend>catkin</buildtool_depend></package>',
+            '<package><name>demo_pkg</name><buildtool_depend>ament_cmake</buildtool_depend></package>',
             encoding='utf-8',
         )
         (package_dir / 'CMakeLists.txt').write_text(
-            'find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)',
+            'find_package(ament_cmake REQUIRED)\nfind_package(rclcpp REQUIRED)\nament_package()',
             encoding='utf-8',
         )
         buffer = io.StringIO()
@@ -59,6 +59,23 @@ class ConsistencyTests(unittest.TestCase):
             issues = self.module.check_workspace(self.root)
         self.assertGreaterEqual(issues, 1)
         self.assertIn('install(DIRECTORY launch', buffer.getvalue())
+
+    def test_accepts_multiline_resource_install_rule(self):
+        package_dir = self.root / 'src' / 'demo_pkg'
+        (package_dir / 'launch').mkdir(parents=True)
+        (package_dir / 'config').mkdir()
+        (package_dir / 'package.xml').write_text(
+            '<package format="3"><name>demo_pkg</name>'
+            '<buildtool_depend>ament_cmake</buildtool_depend></package>',
+            encoding='utf-8',
+        )
+        cmake_text = (
+            'find_package(ament_cmake REQUIRED)\n'
+            'install(DIRECTORY\n  launch\n  config\n  DESTINATION share/${PROJECT_NAME}\n)\n'
+            'ament_package()'
+        )
+        (package_dir / 'CMakeLists.txt').write_text(cmake_text, encoding='utf-8')
+        self.assertEqual(self.module.ros2_install_warnings(package_dir, cmake_text), [])
 
 
 if __name__ == '__main__':

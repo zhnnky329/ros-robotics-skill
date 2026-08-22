@@ -35,7 +35,8 @@ TalkerNode::TalkerNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<std::string>("message_prefix", "Hello");
   message_prefix_ = this->get_parameter("message_prefix").as_string();
 
-  RCLCPP_INFO(this->get_logger(),
+  RCLCPP_INFO(
+    this->get_logger(),
     "发布者节点已启动，消息前缀: '%s'", message_prefix_.c_str());
 
   // ----------------------------------------------------------

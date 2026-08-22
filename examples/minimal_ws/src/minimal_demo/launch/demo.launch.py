@@ -1,5 +1,5 @@
 """
-demo.launch.py — minimal_demo 功能包启动文件
+Launch the minimal_demo package.
 
 功能：
   - 同时启动 talker（发布者）和 listener（订阅者）节点
@@ -23,11 +23,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    """
-    生成 LaunchDescription，ROS 2 launch 系统调用此函数
-    来获取本次启动的所有动作（节点、参数、日志等）。
-    """
-
+    """Return a LaunchDescription for the publisher and subscriber."""
     # ----------------------------------------------------------
     # 获取功能包共享目录路径（用于定位参数文件）
     # ----------------------------------------------------------
@@ -60,6 +56,7 @@ def generate_launch_description():
         parameters=[
             params_file,           # 从 YAML 文件加载参数
             {
+                "message_prefix": LaunchConfiguration("message_prefix"),
                 # use_sim_time 内联参数（优先级高于 YAML）
                 "use_sim_time": False,
             },

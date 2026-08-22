@@ -1,230 +1,171 @@
 # ROS Robotics Skill
 
-![CI](https://github.com/wzyn20051216/ros-robotics-skill/actions/workflows/ci.yml/badge.svg)
-![License](https://img.shields.io/github/license/wzyn20051216/ros-robotics-skill)
-![Stars](https://img.shields.io/github/stars/wzyn20051216/ros-robotics-skill?style=social)
+一个面向 **Ubuntu 22.04、ROS 2 Humble 与 RoboMaster 哨兵自主导航开发** 的工程化 skill，支持 **Codex** 和 **Claude Code**。
 
-一个面向 **ROS 1 / ROS 2 机器人开发、迁移与联调** 的开源工程化 skill / prompt pack，适配 **Codex、Claude Code、Gemini CLI**。
+它不是机器人控制程序，而是一套供 AI 编程助手使用的 ROS 2 工作流程、专题资料和静态检查工具，帮助 Agent 在修改代码前先建立可验证的问题链路。
 
-英文版见：[README.en.md](README.en.md)
+## 目标环境
 
-## 它到底解决什么问题
+| 项目 | 支持范围 |
+| --- | --- |
+| 操作系统 | Ubuntu 22.04 |
+| ROS | ROS 2 Humble |
+| 构建系统 | `ament_cmake`、`ament_python`、`colcon` |
+| Agent | Codex、Claude Code |
+| 主要场景 | RoboMaster 哨兵自主导航、底盘与传感器联调 |
 
-大多数通用 AI 提示词在 ROS 项目里有 4 个通病：
+本仓库只维护上表所列环境与 Agent 的工作流。
 
-- 分不清 `catkin` 和 `ament`
-- 看见问题先改代码，不先排 TF、时间戳、frame、单位和资源安装
-- 不知道 Nav2、`ros2_control`、底盘反馈、`/cmd_vel` 的联调顺序
-- 看见 MCU 就想上 `micro-ROS`，不会先判断 Linux 侧桥接是否更简单
+## 解决的问题
 
-这个项目就是专门解决这些问题的。
+- `package.xml`、`CMakeLists.txt`、安装规则不一致导致构建或运行失败。
+- URDF/Xacro、TF、时间戳、frame 和传感器外参错误。
+- LiDAR、IMU、编码器、里程计、SLAM 与定位链路不稳定。
+- Nav2 已规划但 `/cmd_vel` 没有正确到达底盘。
+- 差速与全向底盘配置混用，速度、角速度或坐标轴语义错误。
+- 串口/CAN 下位机通信缺少校验、超时、重连或失联停车。
+- QoS、DDS、Lifecycle、参数和命名空间问题。
+- 现场问题缺少 rosbag2、日志和可复现证据。
 
-## 支持哪些主机
+## 工作流程
 
-| Host | 集成方式 | 安装位置 |
-| --- | --- | --- |
-| Codex | 原生 skill | `~/.codex/skills/ros-robotics` |
-| Claude Code | 原生 skill | `~/.claude/skills/ros-robotics` |
-| Gemini CLI | 命令包 | `~/.gemini/commands/ros-robotics.md` |
-
-> 说明：Gemini CLI 当前没有与 `SKILL.md` 完全等价的原生 skill 目录机制，所以这里提供的是 **等价工作流命令包**。
-
-## Skills CLI 安装（推荐给习惯 `npx skills` 的用户）
-
-如果你已经在用 Skills CLI，可以直接从 GitHub 安装：
-
-```bash
-npx skills add https://github.com/wzyn20051216/ros-robotics-skill -g -y
+```text
+识别 ROS 2 工作区
+→ 检查依赖和资源安装规则
+→ 明确底盘、传感器、定位与 TF 链路
+→ 按问题读取最少必要资料
+→ 小步修改
+→ 构建、仿真或低速实车验证
 ```
 
-如果你更喜欢仓库简称，也可以试试：
+## 安装
+
+### 本地安装
 
 ```bash
-npx skills add wzyn20051216/ros-robotics-skill -g -y
+git clone https://github.com/wzyn20051216/ros-robotics-skill.git
+cd ros-robotics-skill
+
+# 同时安装到当前设备上的 Codex 和 Claude Code
+python3 scripts/install.py --target all --force
 ```
 
-> 说明：不同环境对 GitHub HTTPS/代理策略不一样，若简称失败，优先使用完整 URL。
+也可以只安装一个目标：
 
-## 一条命令安装
+```bash
+python3 scripts/install.py --target codex --force
+python3 scripts/install.py --target claude --force
+```
 
-### Linux / macOS
+默认安装位置：
 
-自动识别并安装到可用主机：
+| Agent | 安装目录 |
+| --- | --- |
+| Codex | `~/.codex/skills/ros-robotics` |
+| Claude Code | `~/.claude/skills/ros-robotics` |
+
+卸载：
+
+```bash
+python3 scripts/install.py --target all --uninstall
+```
+
+### 一键安装
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/wzyn20051216/ros-robotics-skill/main/install.sh | bash
 ```
 
-显式指定目标：
+一键安装默认自动识别本机已有的 Codex 和 Claude Code；也可以传入 `--target codex`、`--target claude` 或 `--target all`。
+
+## 辅助工具
+
+### 识别 ROS 2 工作区
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/wzyn20051216/ros-robotics-skill/main/install.sh | bash -s -- --target codex
-curl -fsSL https://raw.githubusercontent.com/wzyn20051216/ros-robotics-skill/main/install.sh | bash -s -- --target claude
-curl -fsSL https://raw.githubusercontent.com/wzyn20051216/ros-robotics-skill/main/install.sh | bash -s -- --target gemini
+python3 scripts/detect_ros_workspace.py /path/to/workspace
+python3 scripts/detect_ros_workspace.py /path/to/workspace --json
 ```
 
-### Windows PowerShell
+识别 `ament_cmake`、`ament_python` 和未知包，并给出 ROS 2 Humble/colcon 建议命令。
 
-自动识别并安装到可用主机：
-
-```powershell
-irm https://raw.githubusercontent.com/wzyn20051216/ros-robotics-skill/main/install.ps1 | iex
-```
-
-显式指定目标：
-
-```powershell
-$env:ROS_ROBOTICS_TARGET='codex'; irm https://raw.githubusercontent.com/wzyn20051216/ros-robotics-skill/main/install.ps1 | iex
-$env:ROS_ROBOTICS_TARGET='claude'; irm https://raw.githubusercontent.com/wzyn20051216/ros-robotics-skill/main/install.ps1 | iex
-$env:ROS_ROBOTICS_TARGET='gemini'; irm https://raw.githubusercontent.com/wzyn20051216/ros-robotics-skill/main/install.ps1 | iex
-```
-
-### 本地源码安装
+### 检查依赖和安装规则
 
 ```bash
-git clone https://github.com/wzyn20051216/ros-robotics-skill.git
-cd ros-robotics-skill
-python scripts/install.py --target all --force
+python3 scripts/check_ros_workspace_consistency.py /path/to/workspace
 ```
 
-### 卸载
+检查 CMake 与 `package.xml` 依赖、可执行目标安装、launch/config/URDF 等资源安装、launch 引用、YAML 语法和 Python package 数据文件。
+
+### 检查 URDF/Xacro 与 TF 树
 
 ```bash
-python scripts/install.py --target codex --uninstall
-python scripts/install.py --target claude --uninstall
-python scripts/install.py --target gemini --uninstall
+python3 scripts/check_tf_tree.py /path/to/robot.urdf
+python3 scripts/check_tf_tree.py /path/to/robot.urdf.xacro --json
 ```
 
-## 工作流总览
+检查重复 link/joint、多根、悬挂 link、父子关系和循环依赖。
 
-```mermaid
-flowchart LR
-    A[识别工作区
-ROS1 / ROS2 / mixed] --> B[检查 package.xml
-CMakeLists.txt / install 规则]
-    B --> C[按专题加载文档
-TF / URDF / Nav2 / ros2_control / MCU]
-    C --> D[小步修改]
-    D --> E[最小验证
-构建 / 运行 / 回归]
+## 专题资料
+
+- ROS 2 构建：`references/ros2-colcon.md`
+- URDF/Xacro/TF：`references/robot-description-and-tf.md`
+- Navigation2：`references/navigation2.md`
+- `ros2_control`：`references/ros2-control.md`
+- MCU、串口、CAN、micro-ROS：`references/micro-ros-and-embedded.md`
+- SLAM 与定位：`references/slam-mapping.md`
+- DDS/QoS/网络：`references/dds-qos-networking.md`
+- rosbag2 与诊断：`references/rosbag-diagnostics.md`
+- Gazebo 仿真：`references/gazebo-simulation.md`
+- Lifecycle 与组件：`references/lifecycle-and-components.md`
+- 自定义接口：`references/custom-interfaces.md`
+- 多机器人：`references/multi-robot.md`
+- Docker：`references/docker-ros.md`
+- Foxglove/PlotJuggler：`references/foxglove-visualization.md`
+- 排障流程：`references/debug-playbooks.md`
+- 审查清单：`references/review-checklist.md`
+
+## 最小 ROS 2 示例
+
+`examples/minimal_ws/` 包含一个可用 `colcon` 构建的 `ament_cmake` 示例：
+
+- C++ talker/listener。
+- launch 文件。
+- 参数 YAML。
+- 标准 `package.xml`、CMake 和安装规则。
+
+```bash
+source /opt/ros/humble/setup.bash
+cd examples/minimal_ws
+rosdep install --from-paths src --ignore-src -r -y
+colcon build --symlink-install
+source install/setup.bash
+ros2 launch minimal_demo demo.launch.py
 ```
 
-## 核心能力
+## 开发验证
 
-- `ROS 1 / ROS 2 / mixed workspace` 识别与处理
-- `catkin_make`、`catkin build`、`colcon build` 工作流
-- `package.xml` / `CMakeLists.txt` / 资源安装规则一致性检查
-- `URDF/Xacro`、`robot_state_publisher`、RViz、TF 树调试
-- Navigation2 参数调优、Costmap 配置、定位与导航联调
-- `ros2_control` 硬件接口、控制器 YAML、读写周期问题定位
-- Gazebo / Ignition 仿真集成、传感器配置、`ros_gz_bridge`
-- Lifecycle 节点与 `rclcpp_components` 组件化
-- DDS / QoS 配置、多机网络、RMW 选择
-- `rosbag2` 录制回放、`mcap`、离线诊断工作流
-- SLAM 建图（Cartographer、SLAM Toolbox）与定位
-- Docker 容器化 ROS 开发与多节点编排
-- 自定义 `msg` / `srv` / `action` 接口定义
-- 多机器人系统命名空间隔离与跨机通信
-- MoveIt 2 运动规划、SRDF 配置、运动学插件选择
-- ROS 2 CI/CD 最佳实践（GitHub Actions、colcon test、ament_lint）
-- Foxglove Studio / PlotJuggler 数据可视化与 mcap 离线分析
-- MCU / RTOS / 串口 / CAN / `micro-ROS` 协同开发与风险审查
-- ROS 1 → ROS 2 渐进迁移建议
-- TF 树完整性离线检查（URDF/Xacro 解析）
-- 增强型依赖 / 资源安装规则一致性检查（深度 CMake 分析、launch 引用、YAML 语法）
+```bash
+python3 -m unittest discover -s tests -p "test_*.py" -v
+python3 scripts/validate_project.py
+```
 
 ## 项目结构
 
 ```text
 .
-├── SKILL.md
-├── agents/
-├── docs/
-├── examples/
-├── integrations/
-│   └── gemini/
-├── references/          # 21 个专题参考文档
-├── scripts/             # 工作区检测、增强一致性检查、TF 树检查
-├── tests/
-└── .github/
+├── SKILL.md               # Agent 工作流程与参考路由
+├── agents/openai.yaml     # Codex 展示信息
+├── references/            # 按需加载的 ROS 2 专题资料
+├── scripts/               # 检测、检查和双 Agent 安装器
+├── tests/                 # Python 单元测试
+├── examples/minimal_ws/   # 最小 ROS 2 示例
+├── install.sh
+└── README.md
 ```
 
-## 5 分钟上手
+## 适用边界
 
-### 1. 识别工作区
-
-```bash
-python scripts/detect_ros_workspace.py /path/to/workspace
-```
-
-### 2. 检查依赖与安装规则
-
-```bash
-python scripts/check_ros_workspace_consistency.py /path/to/workspace
-```
-
-### 3. 按专题加载参考文档
-
-- ROS 1：`references/ros1-catkin.md`
-- ROS 2：`references/ros2-colcon.md`
-- 迁移：`references/interop-and-migration.md`
-- 模型 / TF：`references/robot-description-and-tf.md`
-- 导航：`references/navigation2.md`
-- 控制：`references/ros2-control.md`
-- 嵌入式：`references/micro-ros-and-embedded.md`
-- 仿真：`references/gazebo-simulation.md`
-- Lifecycle / 组件：`references/lifecycle-and-components.md`
-- DDS / QoS / 网络：`references/dds-qos-networking.md`
-- 录制回放：`references/rosbag-diagnostics.md`
-- SLAM：`references/slam-mapping.md`
-- Docker：`references/docker-ros.md`
-- 自定义接口：`references/custom-interfaces.md`
-- 多机器人：`references/multi-robot.md`
-- MoveIt 2：`references/moveit2.md`
-- CI/CD：`references/ros2-cicd.md`
-- 可视化：`references/foxglove-visualization.md`
-
-## 真实案例
-
-见：`examples/case-studies.md`
-
-## 文档
-
-- 安装说明：`docs/INSTALL.md`
-- 兼容矩阵：`docs/COMPATIBILITY.md`
-- 贡献指南：`CONTRIBUTING.md`
-- 变更记录：`CHANGELOG.md`
-
-## 官方资料来源
-
-- ROS 1 `catkin`：<https://docs.ros.org/en/noetic/api/catkin/html/>
-- `catkin_tools`：<https://catkin-tools.readthedocs.io/en/latest/quick_start.html>
-- ROS 2 `colcon`：<https://docs.ros.org/en/kilted/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html>
-- `rosdep`：<https://docs.ros.org/en/kilted/Tutorials/Intermediate/Rosdep.html>
-- `ros1_bridge`：<https://docs.ros.org/en/humble/p/ros1_bridge/>
-- `xacro`：<https://docs.ros.org/en/ros2_packages/jazzy/api/xacro/>
-- Nav2：<https://docs.nav2.org/getting_started/>
-- `ros2_control`：<https://control.ros.org/master/doc/getting_started/getting_started.html>
-- micro-ROS：<https://micro.ros.org/docs/overview/introduction/>
-- Gemini CLI custom commands：<https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/commands.md>
-
-## Roadmap
-
-- [x] ROS 1 / ROS 2 / mixed workspace 检测
-- [x] TF / URDF / Nav2 / `ros2_control` / `micro-ROS` 参考文档
-- [x] Codex / Claude / Gemini 安装器
-- [x] 测试与 CI
-- [x] 英文 README
-- [x] Gazebo / Docker / Lifecycle / rosbag / SLAM / DDS·QoS / 自定义接口 / 多机器人参考文档
-- [x] Nav2 参数调优模板与 Costmap 配置示例
-- [x] `ros2_control` 控制器 YAML 配置模板
-- [x] 高级排障 Playbook（TF 断裂、参数失效、launch 部分失败、性能异常）
-- [x] 8 个真实案例覆盖 QoS / Docker / SLAM / Lifecycle / 多机器人
-- [x] TF 树完整性离线检查脚本
-- [x] 更强的依赖 / 资源安装规则检查器（深度 CMake 分析、launch 引用检查、YAML 语法检查）
-- [x] MoveIt 2 运动规划参考文档
-- [x] ROS 2 CI/CD 最佳实践（GitHub Actions + colcon test）
-- [x] 最小示例工作区（`examples/minimal_ws/`，含 C++ 节点、launch、参数文件）
-- [x] Foxglove / PlotJuggler 数据可视化参考
-
-> 如果你觉得这个项目有用，欢迎给个 ⭐ Star 支持一下！
+- 当前尚未加入 RoboMaster 专用参数模板或新诊断脚本。
+- 底盘运动学、接口协议和传感器外参必须以真实硬件为准。
+- 实车测试应先确认急停、超时停车和安全场地，再从低速开始。

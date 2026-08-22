@@ -214,11 +214,11 @@ ros2 node info /controller_manager
 
 ## 官方与高星参考
 
-- `ros2_control` Getting Started：<https://control.ros.org/master/doc/getting_started/getting_started.html>
+- `ros2_control` Getting Started：<https://control.ros.org/humble/doc/getting_started/getting_started.html>
 - `ros2_controllers`：<https://control.ros.org/humble/doc/ros2_controllers/doc/controllers_index.html>
 - `ros2_control` GitHub：<https://github.com/ros-controls/ros2_control>
-- `ros2_control` 架构概述：<https://control.ros.org/master/doc/ros2_control/doc/index.html>
+- `ros2_control` 架构概述：<https://control.ros.org/humble/doc/ros2_control/doc/index.html>
 - diff_drive_controller 文档：<https://control.ros.org/humble/doc/ros2_controllers/diff_drive_controller/doc/userdoc.html>
-- 硬件接口开发指南：<https://control.ros.org/master/doc/ros2_control/hardware_interface/doc/writing_new_hardware_component.html>
+- 硬件接口开发指南：<https://control.ros.org/humble/doc/ros2_control/hardware_interface/doc/writing_new_hardware_component.html>
 - `gazebo_ros2_control`：<https://github.com/ros-controls/gazebo_ros2_control>
 - ros2_control 示例仓库：<https://github.com/ros-controls/ros2_control_demos>

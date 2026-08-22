@@ -26,7 +26,7 @@ export ROS_DOMAIN_ID=42   # 不同 ID 的节点互不可见，推荐 0-101
 
 ```bash
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-sudo apt install ros-jazzy-rmw-cyclonedds-cpp
+sudo apt install ros-humble-rmw-cyclonedds-cpp
 ```
 
 ---
@@ -150,7 +150,7 @@ ros2 topic info /scan --verbose         # 查看 QoS 详情
 ## 组播问题 (Docker/VPN/WSL)
 
 ```bash
-docker run --network host ros:jazzy                   # Docker 用 host 模式
+docker run --network host ros:humble                  # Docker 用 host 模式
 # WSL2: CycloneDDS 配置 Peers 为 localhost
 # VPN 环境: 使用 FastDDS Discovery Server
 ```
@@ -159,8 +159,8 @@ docker run --network host ros:jazzy                   # Docker 用 host 模式
 
 ## 官方与高星参考
 
-- ROS 2 QoS: <https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Quality-of-Service-Settings.html>
-- DDS 调优: <https://docs.ros.org/en/jazzy/How-To-Guides/DDS-tuning.html>
+- ROS 2 QoS: <https://docs.ros.org/en/humble/Concepts/Intermediate/About-Quality-of-Service-Settings.html>
+- DDS 调优: <https://docs.ros.org/en/humble/How-To-Guides/DDS-tuning.html>
 - CycloneDDS: <https://cyclonedds.io/docs/>
 - FastDDS Discovery: <https://fast-dds.docs.eprosima.com/en/latest/fastdds/discovery/discovery_server.html>
-- 多机通信: <https://docs.ros.org/en/jazzy/How-To-Guides/Multiple-Machines-Networking.html>
+- 多机通信: <https://docs.ros.org/en/humble/How-To-Guides/Multiple-Machines-Networking.html>

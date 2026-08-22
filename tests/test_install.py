@@ -30,6 +30,13 @@ class InstallTests(unittest.TestCase):
             home = Path(tmp)
             self.assertEqual(self.module.detect_default_targets(home), ['codex'])
 
+    def test_detects_codex_and_claude(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            (home / '.codex').mkdir()
+            (home / '.claude').mkdir()
+            self.assertEqual(self.module.detect_default_targets(home), ['codex', 'claude'])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -173,6 +173,6 @@ Bond 机制（Nav2 使用）可检测节点存活，上层管理器在节点崩�
 ## 官方与高星参考
 
 - Lifecycle 设计文档: <https://design.ros2.org/articles/node_lifecycle.html>
-- Composition 教程: <https://docs.ros.org/en/jazzy/Tutorials/Intermediate/Composition.html>
-- rclcpp_lifecycle API: <https://docs.ros.org/en/jazzy/p/rclcpp_lifecycle/>
+- Composition 教程: <https://docs.ros.org/en/humble/Tutorials/Intermediate/Composition.html>
+- rclcpp_lifecycle API: <https://docs.ros.org/en/humble/p/rclcpp_lifecycle/>
 - nav2_lifecycle_manager: <https://github.com/ros-navigation/navigation2/tree/main/nav2_lifecycle_manager>

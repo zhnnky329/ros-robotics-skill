@@ -36,7 +36,6 @@ IGNORED_TOKENS = {
     'REQUIRED',
     'COMPONENTS',
     'DEPENDS',
-    'catkin',
     'ament_cmake',
     'ament_python',
     'system_lib',
@@ -109,35 +108,22 @@ def xml_deps(package_xml: Path) -> set[str]:
 
 
 def detect_build_type(package_xml: Path, cmake_text: str) -> str:
-    """! @brief 判断包构建类型：ros1-catkin / ros2-colcon / unknown。"""
+    """! @brief 判断 ROS 2 包构建类型。"""
     xml_text = read_text(package_xml)
-    if (
-        '<buildtool_depend>catkin</buildtool_depend>' in xml_text
-        or 'find_package(catkin' in cmake_text
-    ):
-        return 'ros1-catkin'
     if (
         'ament_package(' in cmake_text
         or '<buildtool_depend>ament_cmake</buildtool_depend>' in xml_text
-        or '<buildtool_depend>ament_python</buildtool_depend>' in xml_text
     ):
-        return 'ros2-colcon'
+        return 'ament_cmake'
+    if '<buildtool_depend>ament_python</buildtool_depend>' in xml_text:
+        return 'ament_python'
     return 'unknown'
 
 
 def cmake_mentions(cmake_text: str) -> set[str]:
-    """! @brief 从 CMakeLists.txt 粗略提取所有依赖引用（find_package + ament_target_dependencies + catkin_package）。"""
+    """! @brief 从 CMakeLists.txt 提取 find_package 与 ament 依赖。"""
     cleaned = strip_comments(cmake_text)
     deps: set[str] = set()
-
-    # catkin COMPONENTS
-    match = re.search(
-        r'find_package\(catkin\s+REQUIRED\s+COMPONENTS\s+([^\)]*)\)',
-        cleaned,
-        re.S,
-    )
-    if match:
-        deps.update(re.findall(r'[A-Za-z0-9_\-]+', match.group(1)))
 
     # 独立的 find_package(XXX REQUIRED ...)
     for m in re.finditer(r'find_package\(([A-Za-z0-9_\-]+)\s+REQUIRED', cleaned):
@@ -146,14 +132,6 @@ def cmake_mentions(cmake_text: str) -> set[str]:
     # ament_target_dependencies
     for m in re.finditer(
         r'ament_target_dependencies\([^\)]*?\s([A-Za-z0-9_\-\s]+)\)',
-        cleaned,
-        re.S,
-    ):
-        deps.update(re.findall(r'[A-Za-z0-9_\-]+', m.group(1)))
-
-    # catkin_package CATKIN_DEPENDS
-    for m in re.finditer(
-        r'catkin_package\([^\)]*CATKIN_DEPENDS\s+([^\)]*)\)',
         cleaned,
         re.S,
     ):
@@ -169,14 +147,15 @@ def ros2_install_warnings(package_dir: Path, cmake_text: str) -> list[str]:
     """
     warnings: list[str] = []
     normalized = '\n'.join(strip_comments(cmake_text).splitlines())
+    installed_directories: set[str] = set()
+    for match in re.finditer(r'install\(\s*DIRECTORY\s+(.+?)\s+DESTINATION\b', normalized, re.S):
+        installed_directories.update(re.findall(r'[A-Za-z0-9_.-]+', match.group(1)))
 
     # 扩展检查目录列表（新增 maps/worlds/models/meshes）
     for dirname in ['launch', 'config', 'urdf', 'rviz', 'maps', 'worlds', 'models', 'meshes']:
         if not (package_dir / dirname).exists():
             continue
-        direct_token = f'DIRECTORY {dirname}'
-        multiline_token = f'DIRECTORY\n  {dirname}'
-        if direct_token not in normalized and multiline_token not in normalized:
+        if dirname not in installed_directories:
             warnings.append(
                 f'存在目录 {dirname}/，但未发现明显的 install(DIRECTORY {dirname} ...) 规则'
             )
@@ -198,17 +177,6 @@ def _extract_find_package_names(cmake_text: str) -> set[str]:
         pkg = m.group(1)
         if pkg not in IGNORED_TOKENS:
             found.add(pkg)
-
-    # catkin COMPONENTS 中的子包
-    m = re.search(
-        r'find_package\(catkin\s+REQUIRED\s+COMPONENTS\s+([^\)]*)\)',
-        cleaned,
-        re.S,
-    )
-    if m:
-        for name in re.findall(r'[A-Za-z0-9_\-]+', m.group(1)):
-            if name not in IGNORED_TOKENS:
-                found.add(name)
 
     return found
 
@@ -657,11 +625,7 @@ def check_workspace(root: Path) -> int:
         print(f'[{package_dir.name}] {build_type}')
 
         # ------- 原有检查 -------
-        if build_type == 'ros1-catkin' and 'find_package(catkin' not in cmake_text:
-            print('  - 告警：package.xml 显示是 catkin 包，但 CMakeLists.txt 中未发现 find_package(catkin ...)')
-            issues += 1
-
-        if build_type == 'ros2-colcon' and 'ament_package(' not in cmake_text:
+        if build_type == 'ament_cmake' and 'ament_package(' not in cmake_text:
             print('  - 告警：疑似 ROS2 包，但 CMakeLists.txt 中未发现 ament_package()')
             issues += 1
 
@@ -669,7 +633,7 @@ def check_workspace(root: Path) -> int:
             print(f'  - 告警：CMake 中提到了依赖，但 package.xml 未声明：{", ".join(missing)}')
             issues += 1
 
-        if build_type == 'ros2-colcon':
+        if build_type == 'ament_cmake':
             for warning in ros2_install_warnings(package_dir, cmake_text):
                 print(f'  - 告警：{warning}')
                 issues += 1
@@ -723,16 +687,13 @@ def check_workspace_enhanced(root: Path) -> dict:
             mentioned = cmake_mentions(cmake_text)
             missing = sorted(dep for dep in mentioned if dep not in declared)
 
-            if build_type == 'ros1-catkin' and 'find_package(catkin' not in cmake_text:
-                _add(LEVEL_ERROR, 'package.xml 显示是 catkin 包，但 CMakeLists.txt 中未发现 find_package(catkin ...)')
-
-            if build_type == 'ros2-colcon' and 'ament_package(' not in cmake_text:
+            if build_type == 'ament_cmake' and 'ament_package(' not in cmake_text:
                 _add(LEVEL_WARN, '疑似 ROS2 包，但 CMakeLists.txt 中未发现 ament_package()')
 
             if missing:
                 _add(LEVEL_WARN, f'CMake 中提到了依赖，但 package.xml 未声明：{", ".join(missing)}')
 
-            if build_type == 'ros2-colcon':
+            if build_type == 'ament_cmake':
                 for w in ros2_install_warnings(package_dir, cmake_text):
                     _add(LEVEL_WARN, w)
 

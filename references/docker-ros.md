@@ -11,7 +11,7 @@
 |----------|------|------|
 | `osrf/ros:humble-desktop` | Humble + RViz + 工具 | 开发、可视化 |
 | `osrf/ros:humble-ros-base` | Humble 最小运行时 | 部署、CI |
-| `osrf/ros:jazzy-desktop` | Jazzy 完整桌面 | 最新版开发 |
+| `osrf/ros:humble-desktop` | Humble 完整桌面 | Ubuntu 22.04 开发 |
 
 Tag 命名规则：`{distro}-{variant}`，variant 包括 `ros-core`（最小）、`ros-base`（基础）、`desktop`（完整）。
 

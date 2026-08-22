@@ -1,4 +1,4 @@
 interface:
   display_name: "ROS Robotics"
-  short_description: "ROS1/ROS2 机器人开发、迁移与联调"
-  default_prompt: "分析当前 ROS 工作区，识别构建系统与问题链路，优先给出最小可验证修改和回归命令。"
+  short_description: "ROS 2 Humble 哨兵自主导航开发与联调"
+  default_prompt: "使用 $ros-robotics 分析当前 RoboMaster 哨兵 ROS 2 工作区，定位导航链路问题并给出最小可验证修改。"
