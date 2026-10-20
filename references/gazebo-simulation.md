@@ -10,12 +10,16 @@ Gazebo 问题通常出在：模型描述(SDF/URDF)、传感器插件配置、物
 
 | ROS 2 发行版 | 推荐版本 | 包名前缀 |
 |---|---|---|
-| Humble | Classic 11 / Gz Fortress | `gazebo_ros` / `ros_gz` |
+| Humble / Ubuntu 22.04 | Gazebo Fortress；旧项目可保留 Classic 11 | `ros_gz`；Classic 用 `gazebo_ros` |
+| Jazzy / Ubuntu 24.04 | Gazebo Harmonic | `ros_gz` |
 
 ```bash
-sudo apt install ros-humble-ros-gz
-sudo apt install ros-humble-gazebo-ros-pkgs # Classic
+# 先加载目标发行版环境
+sudo apt install "ros-${ROS_DISTRO:?请先 source 目标 ROS 环境}-ros-gz"
+# 仅 Humble 旧项目使用 Classic 时：sudo apt install ros-humble-gazebo-ros-pkgs
 ```
+
+Jazzy 使用 Harmonic/ros_gz，不将 Classic 插件或 `gazebo_ros_pkgs` 配置直接复制到 Jazzy。下列 Gz 示例以 Harmonic 为目标，Fortress 的命令、消息命名和插件需按版本核实；保留的 Classic 片段单独标记，均需实际仿真验证。
 
 ---
 
@@ -38,7 +42,7 @@ sudo apt install ros-humble-gazebo-ros-pkgs # Classic
 </sensor>
 ```
 
-### Camera (URDF Gazebo 插件)
+### Camera（仅旧版 Gazebo Classic，不适用于 Jazzy/Harmonic）
 
 ```xml
 <gazebo reference="camera_link">
@@ -150,6 +154,8 @@ def generate_launch_description():
 
 ## 官方与高星参考
 
+- ROS/Gazebo 配对：<https://gazebosim.org/docs/harmonic/ros_installation/>
+- Classic 迁移：<https://gazebosim.org/docs/harmonic/migrating_gazebo_classic_ros2_packages/>
 - Gz Sim 文档: <https://gazebosim.org/docs>
 - ros_gz GitHub: <https://github.com/gazebosim/ros_gz>
 - gazebo_ros_pkgs: <https://github.com/ros-simulation/gazebo_ros_pkgs>
