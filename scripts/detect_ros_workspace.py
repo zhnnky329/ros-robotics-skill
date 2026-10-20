@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-"""检测 ROS 2 ament/colcon 工作区并给出 Humble 构建命令。"""
+"""检测 ROS 2 ament/colcon 工作区，并按发行版给出 Bash 构建命令。"""
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
+import shlex
 import xml.etree.ElementTree as ET
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
+
+SUPPORTED_DISTROS = ('humble', 'jazzy')
 
 
 @dataclass
@@ -30,6 +34,40 @@ class DetectionResult:
     unknown_packages: int
     recommended_commands: list[str]
     packages: list[PackageInfo]
+    ros_distro: str | None
+    ros_distro_source: str
+    warnings: list[str]
+
+
+def detect_ros_distro(
+    requested: str | None = None, ros_install_root: Path = Path('/opt/ros'),
+) -> tuple[str | None, str, list[str]]:
+    """优先使用显式目标和当前环境；仅在安装唯一时自动选择，不按 OS 猜测。"""
+    environment = os.environ.get('ROS_DISTRO', '').strip()
+    warnings: list[str] = []
+    if requested is not None:
+        distro, source = requested, 'argument'
+        if environment and environment != requested:
+            warnings.append(
+                f'目标 {requested} 与当前 ROS_DISTRO={environment} 不同；'
+                '请在未加载其他 ROS 发行版的新终端执行命令，并使用独立构建目录。'
+            )
+    elif environment:
+        distro, source = environment, 'environment'
+    else:
+        installed = sorted(path.parent.name for path in ros_install_root.glob('*/setup.bash')
+                           if path.is_file())
+        if len(installed) != 1:
+            detail = ', '.join(installed) if installed else '无'
+            return None, 'unknown', [
+                (f'无法唯一确定 ROS 发行版（已安装：{detail}）；'
+                 '请使用 --ros-distro humble 或 --ros-distro jazzy 指定目标。')
+            ]
+        distro, source = installed[0], 'installation'
+
+    if distro not in SUPPORTED_DISTROS:
+        warnings.append(f'不支持 ROS 发行版 {distro!r}；仅维护 Humble 与 Jazzy，不生成构建命令。')
+    return distro, source, warnings
 
 
 def read_text_if_exists(path: Path) -> str:
@@ -87,7 +125,10 @@ def iter_package_xml_files(root: Path) -> Iterable[Path]:
             yield path
 
 
-def detect_workspace(root: Path) -> DetectionResult:
+def detect_workspace(
+    root: Path, ros_distro: str | None = None, ros_install_root: Path = Path('/opt/ros'),
+) -> DetectionResult:
+    distro, distro_source, warnings = detect_ros_distro(ros_distro, ros_install_root)
     packages = [detect_package(path) for path in iter_package_xml_files(root)]
     markers: list[str] = []
     if (root / 'install').exists():
@@ -101,13 +142,22 @@ def detect_workspace(root: Path) -> DetectionResult:
 
     if packages and ros2_packages == len(packages):
         workspace_type = 'ros2-colcon'
-        commands = [
-            'source /opt/ros/humble/setup.bash',
-            'rosdep install --from-paths src --ignore-src -r -y',
-            'colcon build --symlink-install',
-            'source install/setup.bash',
-            'colcon test && colcon test-result --verbose',
-        ]
+        commands = []
+        if distro in SUPPORTED_DISTROS:
+            setup_path = ros_install_root / distro / 'setup.bash'
+            if setup_path.is_file():
+                commands = [
+                    f'source {shlex.quote(str(setup_path))}',
+                    f'rosdep install --from-paths src --ignore-src --rosdistro {distro} -r -y',
+                    'colcon build --symlink-install',
+                    'source install/setup.bash',
+                    'colcon test && colcon test-result --verbose',
+                ]
+            else:
+                warnings.append(
+                    f'未找到 {setup_path}，不生成构建命令；'
+                    '请先安装目标发行版；若使用源码或自定义路径安装，请确认实际 underlay 的 setup 路径。'
+                )
     elif unsupported_packages:
         workspace_type = 'unsupported'
         commands = ['仅支持 ROS 2 ament package；请单独处理非 ament package']
@@ -118,16 +168,23 @@ def detect_workspace(root: Path) -> DetectionResult:
     return DetectionResult(
         str(root), workspace_type, markers, len(packages), ros2_packages,
         unsupported_packages, unknown_packages, commands, packages,
+        distro, distro_source, warnings,
     )
 
 
 def print_human_readable(result: DetectionResult) -> None:
     print(f'workspace: {result.workspace}')
     print(f'workspace_type: {result.workspace_type}')
+    print(f'ros_distro: {result.ros_distro or "unknown"}')
+    print(f'ros_distro_source: {result.ros_distro_source}')
     print(f'package_count: {result.package_count}')
     print(f'ros2_packages: {result.ros2_packages}')
     print(f'unsupported_packages: {result.unsupported_packages}')
     print(f'unknown_packages: {result.unknown_packages}')
+    if result.warnings:
+        print('warnings:')
+        for warning in result.warnings:
+            print(f'  - {warning}')
     if result.markers:
         print('markers:')
         for marker in result.markers:
@@ -145,8 +202,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description='检测 ROS 2 ament/colcon 工作区')
     parser.add_argument('path', nargs='?', default='.', help='工作区根目录，默认当前目录')
     parser.add_argument('--json', action='store_true', help='以 JSON 输出')
+    parser.add_argument('--ros-distro', choices=SUPPORTED_DISTROS, help='目标 ROS 2 发行版（优先于 ROS_DISTRO）')
     args = parser.parse_args()
-    result = detect_workspace(Path(args.path).resolve())
+    result = detect_workspace(Path(args.path).resolve(), args.ros_distro)
     if args.json:
         print(json.dumps(asdict(result), ensure_ascii=False, indent=2))
     else:

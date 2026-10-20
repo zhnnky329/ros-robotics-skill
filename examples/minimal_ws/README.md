@@ -15,15 +15,18 @@
 
 ## 先决条件
 
-- **ROS 2 Humble**
+- **Ubuntu 24.04 + ROS 2 Jazzy** 或 **Ubuntu 22.04 + ROS 2 Humble**（需在目标环境实际构建与运行验证）
 - `colcon` 构建工具
 - `rosdep` 依赖管理工具
 
 确认 ROS 2 环境已 source：
 
 ```bash
-source /opt/ros/humble/setup.bash
+ROS_TARGET_DISTRO=jazzy  # Ubuntu 22.04 + Humble 改为 humble
+source "/opt/ros/${ROS_TARGET_DISTRO}/setup.bash"
 ```
+
+使用未加载其他 ROS 发行版的新终端。若 setup 不存在，先确认安装路径；切换版本时使用独立工作区，不复用旧 `build/`、`install/`、`log/`。
 
 ## 构建步骤
 
@@ -32,7 +35,7 @@ source /opt/ros/humble/setup.bash
 cd examples/minimal_ws
 
 # 2. 安装依赖（首次构建时执行）
-rosdep install --from-paths src --ignore-src -r -y
+rosdep install --from-paths src --ignore-src --rosdistro "$ROS_TARGET_DISTRO" -r -y
 
 # 3. 编译工作区
 colcon build --symlink-install
@@ -119,7 +122,7 @@ minimal_ws/
 
 **Q: colcon build 失败，提示找不到 rclcpp？**
 
-A: 确保已正确 source ROS 2 环境：`source /opt/ros/humble/setup.bash`
+A: 按上面的先决条件选择发行版并 source 对应 setup，检查是否混入其他版本的构建产物。
 
 **Q: rosdep install 失败？**
 

@@ -25,8 +25,9 @@ export ROS_DOMAIN_ID=42   # 不同 ID 的节点互不可见，推荐 0-101
 | Connext DDS | `rmw_connextdds` | 商业级，需许可证 |
 
 ```bash
+# 先按 ros2-colcon.md 加载目标 ROS 环境
 export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-sudo apt install ros-humble-rmw-cyclonedds-cpp
+sudo apt install "ros-${ROS_DISTRO:?请先 source 目标 ROS 环境}-rmw-cyclonedds-cpp"
 ```
 
 ---
@@ -150,7 +151,7 @@ ros2 topic info /scan --verbose         # 查看 QoS 详情
 ## 组播问题 (Docker/VPN/WSL)
 
 ```bash
-docker run --network host ros:humble                  # Docker 用 host 模式
+docker run --network host "ros:${ROS_DISTRO:?请先 source 目标 ROS 环境}-ros-base" # host 模式
 # WSL2: CycloneDDS 配置 Peers 为 localhost
 # VPN 环境: 使用 FastDDS Discovery Server
 ```

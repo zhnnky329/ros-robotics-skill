@@ -1,4 +1,6 @@
 import importlib.util
+import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -36,6 +38,21 @@ class InstallTests(unittest.TestCase):
             (home / '.codex').mkdir()
             (home / '.claude').mkdir()
             self.assertEqual(self.module.detect_default_targets(home), ['codex', 'claude'])
+
+    def test_installed_detector_keeps_jazzy_cli(self):
+        source = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as tmp:
+            destination = Path(tmp) / 'ros-robotics'
+            self.module.install_skill_tree(source, destination, force=False)
+            run = subprocess.run(
+                [sys.executable, str(destination / 'scripts' / 'detect_ros_workspace.py'),
+                 str(source / 'examples' / 'minimal_ws'), '--ros-distro', 'jazzy', '--json'],
+                check=True, capture_output=True, text=True,
+            )
+            result = json.loads(run.stdout)
+            self.assertEqual(result['ros_distro'], 'jazzy')
+            self.assertEqual(result['workspace_type'], 'ros2-colcon')
+            self.assertTrue((destination / 'references' / 'ros2-colcon.md').is_file())
 
 
 if __name__ == '__main__':

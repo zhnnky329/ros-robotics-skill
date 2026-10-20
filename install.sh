@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_URL="https://github.com/wzyn20051216/ros-robotics-skill.git"
+REPO_URL="https://github.com/zhnnky329/ros-robotics-skill.git"
 BRANCH="${ROS_ROBOTICS_BRANCH:-main}"
 TARGET="${ROS_ROBOTICS_TARGET:-auto}"
 
