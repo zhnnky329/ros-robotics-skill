@@ -157,7 +157,7 @@ python3 -m unittest discover -s tests -p "test_*.py" -v
 python3 scripts/validate_project.py
 ```
 
-CI 分别在 Ubuntu 22.04 / Python 3.10 与 Ubuntu 24.04 / Python 3.12 执行工具层检查，不安装 ROS。
+本仓库不配置 GitHub CI；使用上述命令在本地执行工具层检查，ROS 构建与运行需在目标环境单独验证。
 
 | 验证层次 | 范围与限制 |
 | --- | --- |
